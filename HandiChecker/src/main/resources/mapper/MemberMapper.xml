@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.samse.handichecker.mapper.MemberMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="memberResultMap" type="com.samse.handichecker.entity.Member">
+        <id property="memberId" column="member_id"/>
+        <result property="loginId" column="login_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="handicap" column="handicap"/>
+        <result property="birthDate" column="birth_date"/>
+        <result property="gender" column="gender" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="deletedAt" column="deleted_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 조건문 -->
+    <sql id="baseCondition">
+        WHERE is_deleted != TRUE
+    </sql>
+
+    <!-- 동적 조건문 -->
+    <sql id="searchConditions">
+        <if test="nickname != null and nickname != ''">
+            AND nickname LIKE CONCAT('%', #{nickname}, '%')
+        </if>
+        <if test="gender != null">
+            AND gender = #{gender}
+        </if>
+        <if test="minHandicap != null">
+            AND handicap >= #{minHandicap}
+        </if>
+        <if test="maxHandicap != null">
+        	<![CDATA[AND handicap <= #{maxHandicap}]]>
+        </if>
+        <if test="birthDateFrom != null">
+            AND birth_date >= #{birthDateFrom}
+        </if>
+        <if test="birthDateTo != null">
+            <![CDATA[AND birth_date <= #{birthDateTo}]]>
+        </if>
+    </sql>
+
+    <!-- 정렬 조건문 -->
+    <sql id="orderByClause">
+        <choose>
+            <when test="sortBy != null and sortBy != '' and sortDirection != null and sortDirection != ''">
+                ORDER BY 
+                <choose>
+                    <when test="sortBy == 'memberId'">member_id</when>
+                    <when test="sortBy == 'nickname'">nickname</when>
+                    <when test="sortBy == 'handicap'">handicap</when>
+                    <when test="sortBy == 'birthDate'">birth_date</when>
+                    <when test="sortBy == 'createdAt'">created_at</when>
+                    <otherwise>created_at</otherwise>
+                </choose>
+                <choose>
+                    <when test="sortDirection == 'ASC'">ASC</when>
+                    <otherwise>DESC</otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                ORDER BY created_at DESC
+            </otherwise>
+        </choose>
+    </sql>
+
+    <!-- 전체 회원 목록 조회 -->
+    <select id="selectAllMembers" resultMap="memberResultMap">
+        SELECT 
+            member_id, login_id, nickname, handicap, birth_date, gender,
+            is_deleted, deleted_at, created_at, updated_at
+        FROM members
+        <include refid="baseCondition"/>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 조건부 검색으로 회원 목록 조회 -->
+    <select id="selectMembersByCondition" parameterType="com.samse.handichecker.dto.MemberSearchCondition" resultMap="memberResultMap">
+        SELECT 
+            member_id, login_id, nickname, handicap, birth_date, gender,
+            is_deleted, deleted_at, created_at, updated_at
+        FROM members
+        <include refid="baseCondition"/>
+        <include refid="searchConditions"/>
+        <include refid="orderByClause"/>
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!-- 조건부 검색 총 개수 -->
+    <select id="countMembersByCondition" parameterType="com.samse.handichecker.dto.MemberSearchCondition" resultType="long">
+        SELECT COUNT(*)
+        FROM members
+        <include refid="baseCondition"/>
+        <include refid="searchConditions"/>
+    </select>
+
+    <!-- ID로 회원 조회 -->
+    <select id="selectMemberById" resultMap="memberResultMap">
+        SELECT 
+            member_id, login_id, nickname, handicap, birth_date, gender,
+            is_deleted, deleted_at, created_at, updated_at
+        FROM members
+        WHERE member_id = #{memberId} AND is_deleted = FALSE
+    </select>
+
+    <!-- 로그인 ID로 회원 조회 -->
+    <select id="selectMemberByLoginId" resultMap="memberResultMap">
+        SELECT 
+            member_id, login_id, nickname, handicap, birth_date, gender,
+            is_deleted, deleted_at, created_at, updated_at
+        FROM members
+        WHERE login_id = #{loginId} AND is_deleted = FALSE
+    </select>
+
+    <!-- 닉네임으로 검색 -->
+    <select id="selectMembersByNickname" resultMap="memberResultMap">
+        SELECT 
+            member_id, login_id, nickname, handicap, birth_date, gender,
+            is_deleted, deleted_at, created_at, updated_at
+        FROM members
+        <include refid="baseCondition"/>
+        AND nickname LIKE CONCAT('%', #{nickname}, '%')
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 성별로 조회 -->
+    <select id="selectMembersByGender" resultMap="memberResultMap">
+        SELECT 
+            member_id, login_id, nickname, handicap, birth_date, gender,
+            is_deleted, deleted_at, created_at, updated_at
+        FROM members
+        <include refid="baseCondition"/>
+        AND gender = #{gender}
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 핸디캡 범위로 조회 -->
+    <select id="selectMembersByHandicapRange" resultMap="memberResultMap">
+        SELECT 
+            member_id, login_id, nickname, handicap, birth_date, gender,
+            is_deleted, deleted_at, created_at, updated_at
+        FROM members
+        <include refid="baseCondition"/>
+        AND handicap BETWEEN #{minHandicap} AND #{maxHandicap}
+        ORDER BY handicap ASC
+    </select>
+
+    <!-- 회원 통계 (성별별) -->
+    <select id="selectMemberStatsByGender" resultType="map">
+        SELECT 
+            gender,
+            COUNT(*) as member_count,
+            ROUND(AVG(handicap), 2) as avg_handicap,
+            MIN(handicap) as min_handicap,
+            MAX(handicap) as max_handicap
+        FROM members
+        <include refid="baseCondition"/>
+        GROUP BY gender
+        ORDER BY gender
+    </select>
+
+    <!-- 회원 생성 -->
+    <insert id="insertMember" parameterType="com.samse.handichecker.entity.Member" useGeneratedKeys="true" keyProperty="memberId">
+        INSERT INTO members (
+            login_id, nickname, handicap, birth_date, gender,
+            is_deleted, created_at, updated_at
+        ) VALUES (
+            #{loginId}, #{nickname}, #{handicap}, #{birthDate}, #{gender},
+            FALSE, NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 회원 정보 수정 -->
+    <update id="updateMember" parameterType="com.samse.handichecker.entity.Member">
+        UPDATE members
+        <set>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="handicap != null">handicap = #{handicap},</if>
+            <if test="birthDate != null">birth_date = #{birthDate},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            updated_at = NOW()
+        </set>
+        WHERE member_id = #{memberId} AND is_deleted = FALSE
+    </update>
+
+    <!-- 회원 논리적 삭제 -->
+    <update id="deleteMember">
+        UPDATE members
+        SET 
+            is_deleted = TRUE,
+            deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE member_id = #{memberId} AND is_deleted = FALSE
+    </update>
+</mapper>
