@@ -19,7 +19,7 @@
 
     <!-- 공통 조건문 -->
     <sql id="baseCondition">
-        WHERE is_deleted != TRUE
+        WHERE is_deleted != 'Y'
     </sql>
 
     <!-- 동적 조건문 -->
@@ -174,7 +174,7 @@
             is_deleted, created_at, updated_at
         ) VALUES (
             #{loginId}, #{nickname}, #{handicap}, #{birthDate}, #{gender},
-            FALSE, NOW(), NOW()
+            'N', NOW(), NOW()
         )
     </insert>
 
@@ -195,9 +195,9 @@
     <update id="deleteMember">
         UPDATE members
         SET 
-            is_deleted = TRUE,
+            is_deleted = 'Y',
             deleted_at = NOW(),
             updated_at = NOW()
-        WHERE member_id = #{memberId} AND is_deleted = FALSE
+        WHERE member_id = #{memberId} AND is_deleted = 'N'
     </update>
 </mapper>
