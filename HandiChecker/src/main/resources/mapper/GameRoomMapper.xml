@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.samse.handichecker.mapper.GameRoomMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="memberResultMap" type="com.samse.handichecker.entity.GameRoom">
+        <id property="roomId" column="room_id"/>
+        <result property="roomname" column="room_name"/>
+        <result property="gamerule" column="game_rule" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="handiYn" column="handi_yn"/>
+        <result property="handiRatio" column="handi_rate"/>
+        <result property="maxParticipants" column="max_participants"/>
+        <result property="currentParticipants" column="current_participants"/>
+        <result property="gameLocation" column="game_location"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="roomStatus" column="room_status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="startedAt" column="started_at"/>
+        <result property="finishedAt" column="finished_at"/>
+    </resultMap>
+
+    <!-- 전체 방목록 조회 -->
+    <select id="selectAllGameRooms" resultMap="memberResultMap">
+        SELECT 
+            *
+        FROM game_rooms
+        ORDER BY created_at DESC
+    </select>
+
+
+</mapper>

@@ -25,11 +25,11 @@ public class GameRoom {
     private Long maxParticipants;
     private Long currentParticipants;
     private String gameLocation;
-    private Long created_by;
+    private Long createdBy;
     private RoomStatus roomStatus;
-    private LocalDateTime created_at;
-    private LocalDateTime started_at;
-    private LocalDateTime finished_at;
+    private LocalDateTime createdAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime finishedAt;
     
     public enum GameRule {
         individual, group
