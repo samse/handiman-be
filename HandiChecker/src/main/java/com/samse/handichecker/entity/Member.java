@@ -21,7 +21,7 @@ public class Member {
     private BigDecimal handicap;
     private LocalDate birthDate;
     private Gender gender;
-    private Boolean isDeleted;
+    private String deletedYn;
     private LocalDateTime deletedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
