@@ -10,7 +10,7 @@
         <result property="nickname" column="nickname"/>
         <result property="handicap" column="handicap"/>
         <result property="birthDate" column="birth_date"/>
-        <result property="gender" column="gender" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="gender" column="gender"/>
         <result property="deletedYn" column="deleted_yn"/>
         <result property="deletedAt" column="deleted_at"/>
         <result property="createdAt" column="created_at"/>

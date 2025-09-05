@@ -1,10 +1,7 @@
 package com.samse.handichecker.entity;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import com.samse.handichecker.entity.Member.Gender;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
